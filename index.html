@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unit 1 Revision test</title>
+  <link rel="icon" type="image/png" sizes="48x48" href="favicon.png">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-300">
+
+  <!-- Header Bar -->
+  <header class="sticky top-0 z-20 bg-white/90 dark:bg-slate-800/90 backdrop-blur border-b border-slate-200 dark:border-slate-700 shadow-sm">
+    <div class="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-brand-100 dark:bg-slate-700 text-brand-600 dark:text-brand-400 rounded-xl">
+          <i class="fa-solid fa-graduation-cap text-xl"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg md:text-xl leading-tight">Unit 1 Revision test</h1>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Dark/Light Theme Switcher -->
+        <button id="theme-toggle" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors flex items-center justify-center" title="Toggle Theme">
+          <i id="theme-icon" class="fa-solid fa-moon text-lg"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    
+    <!-- Top Score Summary Banner (Hidden until checked) -->
+    <div id="result-card" class="hidden mb-8 p-6 md:p-8 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl text-center space-y-4 transition-all duration-300">
+      <div id="praise-emoji" class="text-6xl animate-bounce">🎉</div>
+      <div>
+        <h2 id="praise-text" class="text-2xl font-bold text-slate-800 dark:text-slate-100">Absolutely outstanding!</h2>
+        <p id="score-text" class="text-lg font-semibold text-brand-600 dark:text-brand-400 mt-1">You scored 30 out of 30 (100%)</p>
+      </div>
+      <div class="pt-2 max-w-md mx-auto">
+        <div class="w-full bg-slate-200 dark:bg-slate-700 h-3 rounded-full overflow-hidden">
+          <div id="score-bar" class="bg-brand-600 h-full w-0 transition-all duration-1000"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instructions Banner -->
+    <div class="mb-8 p-4 bg-brand-50 dark:bg-slate-800/80 border border-brand-100 dark:border-slate-700 rounded-2xl flex items-start gap-3">
+      <i class="fa-solid fa-circle-info text-brand-500 text-lg mt-0.5"></i>
+      <div class="text-sm text-slate-600 dark:text-slate-300">
+        <p class="font-medium text-slate-800 dark:text-slate-100 mb-0.5">Instructions:</p>
+        Select the correct answer for each question. Questions tagged as <strong class="text-purple-600 dark:text-purple-400">Multiple choice</strong> have more than one correct option. Answers are evaluated when you click <strong>Check Answers</strong>.
+      </div>
+    </div>
+
+    <!-- Questions Form -->
+    <form id="quiz-form" onsubmit="event.preventDefault();" class="space-y-6">
+      <div id="questions-list" class="space-y-6">
+        <!-- Questions render dynamically -->
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <button type="button" id="check-btn" onclick="checkAnswers()" class="w-full sm:w-auto px-8 py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/25 transition-all duration-200 flex items-center justify-center gap-2 active:scale-95">
+          <i class="fa-solid fa-circle-check"></i>
+          Check Answers
+        </button>
+        <button type="button" onclick="resetQuiz()" class="w-full sm:w-auto px-6 py-3.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-rotate-right"></i>
+          Restart Quiz
+        </button>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    // Exact 31-tier praise scale mapped directly from 0 to 30 points
+    const praiseScaleExact = {
+      0: "😢 Don't give up!",
+      1: "🌱 Keep trying!",
+      2: "💪 Every step counts!",
+      3: "🙂 Keep working on it!",
+      4: "👍 Good effort!",
+      5: "🌿 You're making progress!",
+      6: "😊 You're getting there!",
+      7: "👏 Nice try!",
+      8: "✨ Good work!",
+      9: "😎 Not bad!",
+      10: "🌟 Well done!",
+      11: "💪 Keep it up!",
+      12: "🎯 Good job!",
+      13: "🙌 Nice work!",
+      14: "😊 You're improving!",
+      15: "👏 Solid effort!",
+      16: "🌟 Pretty good!",
+      17: "😃 Good progress!",
+      18: "🎉 Very good!",
+      19: "🔥 Great work!",
+      20: "💯 Impressive!",
+      21: "🤩 Excellent job!",
+      22: "🏅 Really well done!",
+      23: "🚀 Fantastic work!",
+      24: "🌈 Brilliant effort!",
+      25: "🥳 Outstanding!",
+      26: "💎 Superb!",
+      27: "🏆 Exceptional work!",
+      28: "🌟 Absolutely brilliant!",
+      29: "🥇 Nearly perfect!",
+      30: "🎉 Absolutely outstanding!"
+    };
+
+    // Complete Question Dataset according to rules
+    const rawQuestions = [
+      {
+        id: 1,
+        type: "single",
+        prompt: "I’d rather you ______ any commitments on my behalf without consulting me first.",
+        options: [
+          { key: "A", text: "don’t make" },
+          { key: "B", text: "wouldn’t make" },
+          { key: "C", text: "didn’t make" },
+          { key: "D", text: "won’t make" }
+        ],
+        correct: ["C"]
+      },
+      {
+        id: 2,
+        type: "single",
+        prompt: "The proposals ______ by the committee have sparked considerable controversy among local residents.",
+        options: [
+          { key: "A", text: "rejecting" },
+          { key: "B", text: "rejected" },
+          { key: "C", text: "were rejected" },
+          { key: "D", text: "having rejected" }
+        ],
+        correct: ["B"]
+      },
+      {
+        id: 3,
+        type: "multiple",
+        prompt: "She ______ the decisions of senior management. It’s one of the reasons her colleagues respect her.",
+        options: [
+          { key: "A", text: "will question" },
+          { key: "B", text: "questions" },
+          { key: "C", text: "is questioning" },
+          { key: "D", text: "is prone to questioning" }
+        ],
+        correct: ["B", "D"]
+      },
+      {
+        id: 4,
+        type: "single",
+        prompt: "Anyone ______ to challenge the proposed changes should submit their objections in writing before the consultation closes.",
+        options: [
+          { key: "A", text: "wishing" },
+          { key: "B", text: "wished" },
+          { key: "C", text: "who wishing" },
+          { key: "D", text: "is wishing" }
+        ],
+        correct: ["A"]
+      },
+      {
+        id: 5,
+        type: "single",
+        prompt: "He ______ other people’s contributions as if they were insignificant. I’m surprised nobody has confronted him about it.",
+        options: [
+          { key: "A", text: "constantly dismisses" },
+          { key: "B", text: "would always dismiss" },
+          { key: "C", text: "will constantly dismiss" },
+          { key: "D", text: "is constantly dismissing" }
+        ],
+        correct: ["D"]
+      },
+      {
+        id: 6,
+        type: "single",
+        prompt: "Given the choice, I’d much rather ______ a well-paid position with limited autonomy than a lower-paid job that allows me to make my own decisions.",
+        options: [
+          { key: "A", text: "not to accept" },
+          { key: "B", text: "not accept" },
+          { key: "C", text: "didn’t accept" },
+          { key: "D", text: "not accepting" }
+        ],
+        correct: ["B"]
+      },
+      {
+        id: 7,
+        type: "single",
+        prompt: "Several historical buildings ______ during the renovation have since been restored to their former glory.",
+        options: [
+          { key: "A", text: "damaging" },
+          { key: "B", text: "damaged" },
+          { key: "C", text: "were damaged" },
+          { key: "D", text: "having damaged" }
+        ],
+        correct: ["B"]
+      },
+      {
+        id: 8,
+        type: "single",
+        prompt: "He has a tendency ______ criticism as a personal attack rather than an opportunity to improve.",
+        options: [
+          { key: "A", text: "interpreting" },
+          { key: "B", text: "interpret" },
+          { key: "C", text: "to interpret" },
+          { key: "D", text: "to interpreting" }
+        ],
+        correct: ["C"]
+      },
+      {
+        id: 9,
+        type: "single",
+        prompt: "I’d rather you ______ this conversation outside the office. There’s no need for everyone to know about the disagreement.",
+        options: [
+          { key: "A", text: "take" },
+          { key: "B", text: "took" },
+          { key: "C", text: "would take" },
+          { key: "D", text: "had taken" }
+        ],
+        correct: ["B"]
+      },
+      {
+        id: 10,
+        type: "single",
+        prompt: "People who are prone to ______ impulsively may find it difficult to adapt to roles that require careful long-term planning.",
+        options: [
+          { key: "A", text: "act" },
+          { key: "B", text: "acting" },
+          { key: "C", text: "have acted" },
+          { key: "D", text: "be acted" }
+        ],
+        correct: ["B"]
+      },
+      {
+        id: 11,
+        type: "single",
+        prompt: "The documentary, ______ in several European countries, examines the long-term consequences of poorly planned urban development.",
+        options: [
+          { key: "A", text: "filming" },
+          { key: "B", text: "filmed" },
+          { key: "C", text: "having filmed" },
+          { key: "D", text: "was filmed" }
+        ],
+        correct: ["B"]
+      },
+      {
+        id: 12,
+        type: "multiple",
+        prompt: "I _______ cook at home than order takeaway, I don't fancy going out today.",
+        options: [
+          { key: "A", text: "tend to" },
+          { key: "B", text: "would sooner" },
+          { key: "C", text: "would rather" },
+          { key: "D", text: "would" }
+        ],
+        correct: ["B", "C"]
+      },
+      {
+        id: 13,
+        type: "single",
+        prompt: "I’d rather ______ the implications of the decision thoroughly before committing the company to anything.",
+        options: [
+          { key: "A", text: "considering" },
+          { key: "B", text: "to consider" },
+          { key: "C", text: "consider" },
+          { key: "D", text: "considered" }
+        ],
+        correct: ["C"]
+      },
+      {
+        id: 14,
+        type: "multiple",
+        prompt: "She ______ leave everything until the last minute and then expected the rest of the team to help her meet the deadline. It literally drove everyone mad.",
+        options: [
+          { key: "A", text: "would" },
+          { key: "B", text: "tended" },
+          { key: "C", text: "will" },
+          { key: "D", text: "used to" }
+        ],
+        correct: ["A", "D"]
+      },
+      {
+        id: 15,
+        type: "multiple",
+        prompt: "Which sentences are grammatically correct?",
+        options: [
+          { key: "A", text: "The colleague with whom I shared the project has just resigned." },
+          { key: "B", text: "The colleague whom I shared the project with has just resigned." },
+          { key: "C", text: "The colleague with who I shared the project has just resigned." },
+          { key: "D", text: "The colleague with that I shared the project has just resigned." }
+        ],
+        correct: ["A", "B"]
+      },
+      {
+        id: 16,
+        type: "single",
+        prompt: "The issue _____ during the meeting was important.",
+        options: [
+          { key: "A", text: "up which he brought" },
+          { key: "B", text: "which up he brought" },
+          { key: "C", text: "which he brought" },
+          { key: "D", text: "which he brought up" }
+        ],
+        correct: ["D"]
+      },
+      {
+        id: 17,
+        type: "multiple",
+        prompt: "Which sentences are grammatically correct?",
+        options: [
+          { key: "A", text: "The company for which she works is expanding rapidly." },
+          { key: "B", text: "The company which she works for is expanding rapidly." },
+          { key: "C", text: "The company for that she works is expanding rapidly." },
+          { key: "D", text: "The company whom she works for is expanding rapidly." }
+        ],
+        correct: ["A", "B"]
+      },
+      {
+        id: 18,
+        type: "single",
+        prompt: "The candidate to _______ we offered the position turned it down.",
+        options: [
+          { key: "A", text: "who" },
+          { key: "B", text: "whom" },
+          { key: "C", text: "whose" },
+          { key: "D", text: "which" }
+        ],
+        correct: ["B"]
+      },
+      {
+        id: 19,
+        type: "multiple",
+        prompt: "The proposal _____ we came up with was approved.",
+        options: [
+          { key: "A", text: "which" },
+          { key: "B", text: "with which" },
+          { key: "C", text: "that" },
+          { key: "D", text: "-" }
+        ],
+        correct: ["A", "C", "D"]
+      },
+      {
+        id: 20,
+        type: "single",
+        prompt: "Whenever there's a difficult decision to make, Mark _____ to overthink everything.",
+        options: [
+          { key: "A", text: "will tend" },
+          { key: "B", text: "will" },
+          { key: "C", text: "tend" },
+          { key: "D", text: "will be prone" }
+        ],
+        correct: ["C"]
+      },
+      {
+        id: 21,
+        type: "multiple",
+        prompt: "Which sentences are grammatically correct?",
+        options: [
+          { key: "A", text: "I used to work in a small office before I moved abroad." },
+          { key: "B", text: "I would live in London when I was a child." },
+          { key: "C", text: "Every summer, we would spend two weeks at our grandparents' house." },
+          { key: "D", text: "I didn't use to enjoy public speaking." }
+        ],
+        correct: ["A", "C", "D"]
+      },
+      {
+        id: 22,
+        type: "single",
+        prompt: "There _____ be a cinema on this street, but it closed down years ago.",
+        options: [
+          { key: "A", text: "would" },
+          { key: "B", text: "used to" },
+          { key: "C", text: "was used to" },
+          { key: "D", text: "would have" }
+        ],
+        correct: ["B"]
+      },
+      {
+        id: 23,
+        type: "multiple",
+        prompt: "Which sentences describe repeated past actions or habits naturally?",
+        options: [
+          { key: "A", text: "Whenever we had a deadline, our team leader would stay late to help us." },
+          { key: "B", text: "I would know him very well when we worked together." },
+          { key: "C", text: "She used to take the same bus to work every morning." },
+          { key: "D", text: "He would be shy as a child, but now he's very outgoing." }
+        ],
+        correct: ["A", "C"]
+      },
+      {
+        id: 24,
+        type: "single",
+        prompt: "People who are perfectionists are often _____ spend too much time on minor details.",
+        options: [
+          { key: "A", text: "prone to" },
+          { key: "B", text: "inclined to" },
+          { key: "C", text: "prone for" },
+          { key: "D", text: "inclined at" }
+        ],
+        correct: ["B"]
+      },
+      {
+        id: 25,
+        type: "multiple",
+        prompt: "Which sentences are grammatically correct?",
+        options: [
+          { key: "A", text: "He's prone to making impulsive decisions under pressure." },
+          { key: "B", text: "She's inclined to question authority." },
+          { key: "C", text: "I tend to forgetting people's names shortly after meeting them." },
+          { key: "D", text: "They tend to arrive early for important meetings." }
+        ],
+        correct: ["A", "B", "D"]
+      },
+      {
+        id: 26,
+        type: "multiple",
+        prompt: "This particular model of laptop _____ overheating when used for demanding tasks.",
+        options: [
+          { key: "A", text: "is inclined to" },
+          { key: "B", text: "is prone to" },
+          { key: "C", text: "tends to" },
+          { key: "D", text: "will" }
+        ],
+        correct: ["B", "C"]
+      },
+      {
+        id: 27,
+        type: "multiple",
+        prompt: "Which sentences are grammatically correct?",
+        options: [
+          { key: "A", text: "He tends to avoid difficult conversations." },
+          { key: "B", text: "She is inclined to being overly critical of herself." },
+          { key: "C", text: "Young children are prone to catching colds when they start school." },
+          { key: "D", text: "I tend not to spend much money on clothes." }
+        ],
+        correct: ["A", "C", "D"]
+      },
+      {
+        id: 28,
+        type: "multiple",
+        prompt: "Which sentences naturally express annoyance about a repeated present habit?",
+        options: [
+          { key: "A", text: "He's constantly borrowing my charger without asking." },
+          { key: "B", text: "She is always interrupting me when I'm trying to explain something." },
+          { key: "C", text: "He interrupted me yesterday while I was speaking." },
+          { key: "D", text: "You're forever complaining about the office temperature!" }
+        ],
+        correct: ["A", "B", "D"]
+      },
+      {
+        id: 29,
+        type: "multiple",
+        prompt: "Which sentences express annoyance about repeated past behaviour?",
+        options: [
+          { key: "A", text: "She was constantly changing the meeting time at the last minute." },
+          { key: "B", text: "He would always be leaving his files all over the office." },
+          { key: "C", text: "They are forever arriving late when we worked together." },
+          { key: "D", text: "They were always forgetting to submit his reports." }
+        ],
+        correct: ["A", "B", "D"]
+      },
+      {
+        id: 30,
+        type: "single",
+        prompt: "I'd rather you _____ me before making such a significant change to the project yesterday.",
+        options: [
+          { key: "A", text: "consulted" },
+          { key: "B", text: "consult" },
+          { key: "C", text: "had consulted" },
+          { key: "D", text: "would consult" }
+        ],
+        correct: ["C"]
+      }
+    ];
+
+    let currentQuestions = [];
+
+    // Fisher-Yates Shuffle Algorithm
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    // Theme Switcher Toggle
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+
+    themeToggleBtn.addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+      const isDark = document.documentElement.classList.contains('dark');
+      themeIcon.className = isDark ? 'fa-solid fa-sun text-amber-400 text-lg' : 'fa-solid fa-moon text-lg';
+    });
+
+    // Render Quiz Items
+    function renderQuiz() {
+      currentQuestions = shuffleArray(rawQuestions);
+      const container = document.getElementById('questions-list');
+      container.innerHTML = '';
+
+      currentQuestions.forEach((q, qIndex) => {
+        const card = document.createElement('div');
+        card.className = 'p-5 md:p-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm hover:shadow-md transition-shadow';
+        card.id = `q-card-${qIndex}`;
+
+        const isMultiple = q.type === 'multiple';
+        const badgeLabel = isMultiple ? 'Multiple choice' : 'Single choice';
+        const badgeClass = isMultiple 
+          ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300' 
+          : 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300';
+
+        let optionsHTML = '';
+        q.options.forEach(opt => {
+          const inputId = `q_${qIndex}_opt_${opt.key}`;
+          const inputName = `question_${qIndex}`;
+          const inputType = isMultiple ? 'checkbox' : 'radio';
+
+          optionsHTML += `
+            <label for="${inputId}" id="label_${inputId}" class="option-label flex items-start gap-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 cursor-pointer transition-colors">
+              <input type="${inputType}" 
+                     id="${inputId}" 
+                     name="${inputName}" 
+                     value="${opt.key}" 
+                     class="mt-1 w-4 h-4 text-brand-600 border-slate-300 focus:ring-brand-500 dark:border-slate-600 dark:bg-slate-700 ${isMultiple ? 'rounded' : ''}">
+              <span class="text-slate-700 dark:text-slate-200 text-sm md:text-base leading-relaxed">
+                <strong class="font-semibold mr-1">${opt.key})</strong> ${opt.text}
+              </span>
+            </label>
+          `;
+        });
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 bg-brand-100 dark:bg-slate-700 text-brand-700 dark:text-brand-300 rounded-lg text-sm font-bold flex items-center justify-center">
+                ${qIndex + 1}
+              </span>
+              <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${badgeClass}">
+                ${badgeLabel}
+              </span>
+            </div>
+            <div id="q-status-${qIndex}" class="hidden text-sm font-semibold flex items-center gap-1.5"></div>
+          </div>
+          <p class="text-slate-800 dark:text-slate-100 font-medium text-base md:text-lg mb-4 leading-snug">
+            ${q.prompt}
+          </p>
+          <div class="space-y-2.5">
+            ${optionsHTML}
+          </div>
+          <div id="q-explanation-${qIndex}" class="hidden mt-4 p-3 bg-slate-100 dark:bg-slate-750 rounded-xl text-xs md:text-sm text-slate-600 dark:text-slate-300"></div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    // Evaluation on Check Answers
+    function checkAnswers() {
+      let score = 0;
+
+      currentQuestions.forEach((q, qIndex) => {
+        const inputName = `question_${qIndex}`;
+        const isMultiple = q.type === 'multiple';
+
+        let selectedKeys = [];
+        if (isMultiple) {
+          const checkedInputs = document.querySelectorAll(`input[name="${inputName}"]:checked`);
+          selectedKeys = Array.from(checkedInputs).map(el => el.value).sort();
+        } else {
+          const checkedInput = document.querySelector(`input[name="${inputName}"]:checked`);
+          if (checkedInput) selectedKeys = [checkedInput.value];
+        }
+
+        const correctKeys = [...q.correct].sort();
+
+        // Exact match comparison
+        const isCorrect = selectedKeys.length === correctKeys.length && 
+                          selectedKeys.every((val, idx) => val === correctKeys[idx]);
+
+        if (isCorrect) {
+          score++;
+        }
+
+        // Update status badge
+        const statusEl = document.getElementById(`q-status-${qIndex}`);
+        statusEl.classList.remove('hidden', 'text-emerald-600', 'text-red-500', 'dark:text-emerald-400', 'dark:text-red-400');
+
+        if (isCorrect) {
+          statusEl.className = 'text-sm font-semibold flex items-center gap-1 text-emerald-600 dark:text-emerald-400';
+          statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> Correct';
+        } else {
+          statusEl.className = 'text-sm font-semibold flex items-center gap-1 text-red-500 dark:text-red-400';
+          statusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Incorrect';
+        }
+
+        // Visual highlights for option labels
+        q.options.forEach(opt => {
+          const inputId = `q_${qIndex}_opt_${opt.key}`;
+          const inputEl = document.getElementById(inputId);
+          const labelEl = document.getElementById(`label_${inputId}`);
+          if (!labelEl) return;
+
+          if (inputEl) inputEl.disabled = true;
+          labelEl.classList.add('cursor-not-allowed', 'opacity-90');
+
+          labelEl.classList.remove('bg-emerald-50', 'border-emerald-500', 'dark:bg-emerald-950/40', 'bg-red-50', 'border-red-500', 'dark:bg-red-950/40');
+
+          const isOptionCorrect = correctKeys.includes(opt.key);
+          const isOptionSelected = selectedKeys.includes(opt.key);
+
+          if (isOptionCorrect) {
+            labelEl.classList.add('bg-emerald-50', 'border-emerald-500', 'dark:bg-emerald-950/40');
+          } else if (isOptionSelected) {
+            labelEl.classList.add('bg-red-50', 'border-red-500', 'dark:bg-red-950/40');
+          }
+        });
+
+        // Explanation / Correct Answer key box
+        const explanationEl = document.getElementById(`q-explanation-${qIndex}`);
+        if (!isCorrect) {
+          explanationEl.classList.remove('hidden');
+          const correctText = correctKeys.join(', ');
+          explanationEl.innerHTML = `<span class="font-semibold text-slate-700 dark:text-slate-200">Correct Answer:</span> <strong class="text-emerald-600 dark:text-emerald-400">${correctText}</strong>`;
+        } else {
+          explanationEl.classList.add('hidden');
+        }
+      });
+
+      displayResults(score);
+    }
+
+    // Display Results with exact praise scale
+    function displayResults(score) {
+      const total = currentQuestions.length; // 30
+      const fullText = praiseScaleExact[score] || "👍 Good effort!";
+      
+      const spaceIndex = fullText.indexOf(' ');
+      const emoji = fullText.substring(0, spaceIndex);
+      const textPhrase = fullText.substring(spaceIndex + 1);
+
+      const resultCard = document.getElementById('result-card');
+      document.getElementById('praise-emoji').textContent = emoji;
+      document.getElementById('praise-text').textContent = textPhrase;
+      
+      const percentage = Math.round((score / total) * 100);
+      document.getElementById('score-text').textContent = `You scored ${score} out of ${total} (${percentage}%)`;
+
+      const scoreBar = document.getElementById('score-bar');
+      resultCard.classList.remove('hidden');
+
+      setTimeout(() => {
+        scoreBar.style.width = `${percentage}%`;
+      }, 100);
+
+      resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Restart Quiz
+    function resetQuiz() {
+      document.getElementById('result-card').classList.add('hidden');
+      document.getElementById('score-bar').style.width = '0%';
+      renderQuiz();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.onload = function() {
+      renderQuiz();
+    };
+  </script>
+</body>
+</html>
